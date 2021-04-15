@@ -54,12 +54,14 @@
 #include "stm32f4xx.h"
 #include "stm32f4x7_eth_bsp.h"
 
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-#define USE_LCD        /* enable LCD  */  
+//#define USE_LCD        /* enable LCD  */  
 //#define USE_DHCP       /* enable DHCP, if disabled static address is used */
-
+#define SERIAL_DEBUG
+#define LWIP_DEBUG
  
 /* MAC ADDRESS: MAC_ADDR0:MAC_ADDR1:MAC_ADDR2:MAC_ADDR3:MAC_ADDR4:MAC_ADDR5 */
 #define MAC_ADDR0   2

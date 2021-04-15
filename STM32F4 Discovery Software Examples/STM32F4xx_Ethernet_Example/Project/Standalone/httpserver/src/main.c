@@ -79,19 +79,28 @@ int main(void)
        To reconfigure the default setting of SystemInit() function, refer to
        system_stm32f4xx.c file
      */
-
+#ifdef SERIAL_DEBUG 
+	DebugComPort_Init();
+#endif
+	
+		printf("\r\n-----This example test http server------\r\n");
+	
   /*Initialize LCD and Leds */ 
   LCD_LED_Init();
   
   /* configure ethernet (GPIOs, clocks, MAC, DMA) */ 
   ETH_BSP_Config();
- 
+	printf("Eth init OK\r\n");	
+
+	
   /* Initilaize the LwIP stack */
   LwIP_Init();
-  
+  printf("LowIP init OK\r\n");	
+		
   /* Http webserver Init */
   httpd_init();
-    
+	printf("httpd init OK\r\n");	  
+  
   /* Infinite loop */
   while (1)
   {  

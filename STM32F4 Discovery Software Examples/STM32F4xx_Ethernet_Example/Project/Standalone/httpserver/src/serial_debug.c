@@ -22,7 +22,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
-#include "stm324xg_eval.h"
+#include "stm32f4_discovery.h"
 #include "serial_debug.h"
 #include <stdio.h>
 
