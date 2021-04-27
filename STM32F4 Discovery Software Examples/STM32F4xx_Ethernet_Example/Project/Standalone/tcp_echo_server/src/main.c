@@ -81,9 +81,17 @@ int main(void)
        system_stm32f4xx.c file
      */
 
+#ifdef SERIAL_DEBUG 
+	DebugComPort_Init();
+#endif
+	
+	printf("\r\n-----This example test tcp echo server------\r\n");	
+	
   /*Initialize LCD and Leds */ 
   LCD_LED_Init();
-  
+	STM_EVAL_LEDOn(LED3);
+  STM_EVAL_LEDOn(LED4);
+	
   /* configure ethernet (GPIOs, clocks, MAC, DMA) */ 
   ETH_BSP_Config();
     
@@ -141,7 +149,10 @@ void LCD_LED_Init(void)
   /* Initialize the STM324xG-EVAL's LCD */
   STM32f4_Discovery_LCD_Init();
 #endif
- 
+
+  STM_EVAL_LEDInit(LED4);
+	STM_EVAL_LEDInit(LED3);
+	
 #ifdef USE_LCD
   /* Clear the LCD */
   LCD_Clear(Black);

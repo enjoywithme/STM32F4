@@ -88,6 +88,8 @@ int main(void)
   /*Initialize LCD and Leds */ 
   LCD_LED_Init();
   
+	STM_EVAL_LEDOn(LED4);
+	
   /* configure ethernet (GPIOs, clocks, MAC, DMA) */ 
   ETH_BSP_Config();
 	printf("Eth init OK\r\n");	

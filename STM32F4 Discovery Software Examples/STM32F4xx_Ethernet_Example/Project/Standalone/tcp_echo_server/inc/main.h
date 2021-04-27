@@ -58,12 +58,12 @@
 /* Exported constants --------------------------------------------------------*/
 
 
-#define USE_LCD        /* enable LCD  */  
+//#define USE_LCD        /* enable LCD  */  
 //#define USE_DHCP       /* enable DHCP, if disabled static address is used */
 
 /* Uncomment SERIAL_DEBUG to enables retarget of printf to  serial port (COM1 on STM32 evalboard) 
    for debug purpose */   
-//#define SERIAL_DEBUG 
+#define SERIAL_DEBUG 
 
  
 /* MAC ADDRESS: MAC_ADDR0:MAC_ADDR1:MAC_ADDR2:MAC_ADDR3:MAC_ADDR4:MAC_ADDR5 */
