@@ -9,6 +9,8 @@
 #define   SPI_BUFFER_N	    10
 #define 	SPI_DR_BASE 	(SPI3_BASE + 0x0C) //SPI3 数据寄存器地址
 #define		SPI_DMA_STREAM DMA1_Stream0
+#define		AD_SYNC_GPIO GPIOD
+#define		AD_SYNC_GPIO_PIN	GPIO_Pin_8
 
 uint8_t	ad_start_flag = 0;//AD启动标志
 extern struct tcp_echoserver_struct *client_es;//接受的客户端连接
@@ -195,10 +197,10 @@ void ADS1274_Config(void)
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);//使能GPIOD时钟
 	
 	SYNC_GPIO.GPIO_Mode=GPIO_Mode_OUT ;
-	SYNC_GPIO.GPIO_Pin=GPIO_Pin_8;
+	SYNC_GPIO.GPIO_Pin=AD_SYNC_GPIO_PIN;
 	SYNC_GPIO.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOD,&SYNC_GPIO);
-	GPIO_ResetBits (GPIOD,GPIO_Pin_8);	
+	GPIO_ResetBits (AD_SYNC_GPIO,AD_SYNC_GPIO_PIN);	
 	
 }
 
@@ -242,18 +244,27 @@ void SPI_DMA_STREAM_IRQHandler(void)
 
 static void ADS1274_Start(void)
 {
+	uint8_t t = GPIO_ReadOutputDataBit(AD_SYNC_GPIO,AD_SYNC_GPIO_PIN);
+	if(t==1)
+		return;
+	
 	buffer_recv_index = 0;
 	buffer_send_index = 0;
 	buffer_overflow = 0;
 	STM_EVAL_LEDOn(LED4);
-	printf("Sarted\r\n");
-	GPIO_SetBits(GPIOD,GPIO_Pin_8);	//拉低禁止转换，拉高开始转换
+	printf("START\r\n");	
+	GPIO_SetBits(AD_SYNC_GPIO,AD_SYNC_GPIO_PIN);	//拉低禁止转换，拉高开始转换
 }
 
 static void ADS1274_Stop(void)
 {
-	GPIO_ResetBits (GPIOD,GPIO_Pin_8);	//拉低禁止转换，拉高开始转换
+	uint8_t t = GPIO_ReadOutputDataBit(AD_SYNC_GPIO,AD_SYNC_GPIO_PIN);
+	if(t==0)
+		return;
+	
+	GPIO_ResetBits (AD_SYNC_GPIO,AD_SYNC_GPIO_PIN);	//拉低禁止转换，拉高开始转换
 	STM_EVAL_LEDOff(LED4);
+	printf("STOP\r\n");
 }
 
 void ADS1274_run(void)

@@ -159,12 +159,12 @@ static void check_recv_data(struct tcp_echoserver_struct *es)
 	printf("\r\ngot data\r\n");
 	printf(payload);	
 		
-	if(payload[0]=='!' && payload[0]=='S')
+	if(payload[0]=='!' && payload[1]=='S')
 	{
 		ad_start_flag = 1;
 	}
 	
-	if(payload[0]=='!' && payload[0]=='T')
+	if(payload[0]=='!' && payload[1]=='T')
 	{
 		ad_start_flag = 0;
 	}	
