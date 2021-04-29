@@ -38,30 +38,16 @@
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/tcp.h"
+#include "tcp_echoserver.h"
 
 #if LWIP_TCP
 
 static struct tcp_pcb *tcp_echoserver_pcb;
 
-/* ECHO protocol states */
-enum tcp_echoserver_states
-{
-  ES_NONE = 0,
-  ES_ACCEPTED,
-  ES_RECEIVED,
-  ES_CLOSING
-};
 
-/* structure for maintaing connection infos to be passed as argument 
-   to LwIP callbacks*/
-struct tcp_echoserver_struct
-{
-  u8_t state;             /* current connection state */
-  struct tcp_pcb *pcb;    /* pointer on the current tcp_pcb */
-  struct pbuf *p;         /* pointer on the received/to be transmitted pbuf */
-};
 
 struct tcp_echoserver_struct *client_es;//ֻ只接受一个连接
+extern u8_t ad_start_flag;//data_sample中的1274启动标志
 
 static err_t tcp_echoserver_accept(void *arg, struct tcp_pcb *newpcb, err_t err);
 static err_t tcp_echoserver_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
@@ -70,8 +56,8 @@ static err_t tcp_echoserver_poll(void *arg, struct tcp_pcb *tpcb);
 static err_t tcp_echoserver_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
 static void tcp_echoserver_send(struct tcp_pcb *tpcb, struct tcp_echoserver_struct *es);
 static void tcp_echoserver_connection_close(struct tcp_pcb *tpcb, struct tcp_echoserver_struct *es);
-static void debug_print_data(struct tcp_echoserver_struct *es);
-void tcp_echoserver_send_data(struct tcp_echoserver_struct *es,void *payload,u16_t len);
+static void check_recv_data(struct tcp_echoserver_struct *es);
+u8_t tcp_echoserver_send_data(struct tcp_echoserver_struct *es,void *payload,u16_t len);
 
 /**
   * @brief  Initializes the tcp echo server
@@ -161,10 +147,30 @@ static err_t tcp_echoserver_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
   return ret_err;  
 }
 
-static void debug_print_data(struct tcp_echoserver_struct *es)
+/*解析接收到的数据*/
+static void check_recv_data(struct tcp_echoserver_struct *es)
 {
+	unsigned char * payload;
+	
+	if(es->p->len<2)
+		goto exit;
+	
+	payload = es->p->payload;
 	printf("\r\ngot data\r\n");
-	printf(es->p->payload);	
+	printf(payload);	
+		
+	if(payload[0]=='!' && payload[0]=='S')
+	{
+		ad_start_flag = 1;
+	}
+	
+	if(payload[0]=='!' && payload[0]=='T')
+	{
+		ad_start_flag = 0;
+	}	
+	exit:
+		pbuf_free(es->p);
+		es->p = NULL;
 }
 
 /**
@@ -210,40 +216,21 @@ static err_t tcp_echoserver_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
     }
     ret_err = err;
   } else if(es->state == ES_ACCEPTED) {
-    /* first data chunk in p->payload */
-    es->state = ES_RECEIVED;
     
     /* store reference to incoming pbuf (chain) */
     es->p = p;
 		
-		debug_print_data(es);
+		
     
     /* initialize LwIP tcp_sent callback function */
     tcp_sent(tpcb, tcp_echoserver_sent);
     
     /* send back the received data (echo) */
-    tcp_echoserver_send(tpcb, es);
-    
+    //tcp_echoserver_send(tpcb, es);
+    check_recv_data(es);
+		
     ret_err = ERR_OK;
-  } else if (es->state == ES_RECEIVED) {
-    /* more data received from client and previous data has been already sent*/
-    if (es->p == NULL) {
-      es->p = p;
-			
-			debug_print_data(es);
-			
-      /* send back received data */
-      tcp_echoserver_send(tpcb, es);
-    } else {
-      struct pbuf *ptr;
-
-      /* chain pbufs to the end of what we recv'ed previously  */
-      ptr = es->p;
-      pbuf_chain(ptr,p);
-    }
-    ret_err = ERR_OK;
-  }
-  
+  }   
   /* data received when connection already closed */
   else {
     /* Acknowledge data reception */
@@ -336,14 +323,14 @@ static err_t tcp_echoserver_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
 }
 
 //从一个接受的客户连接发送数据
-void tcp_echoserver_send_data(struct tcp_echoserver_struct *es,void *payload,u16_t len)
+u8_t tcp_echoserver_send_data(struct tcp_echoserver_struct *es,void *payload,u16_t len)
 {
 
 	struct tcp_pcb *tpcb = es->pcb;
   err_t wr_err = ERR_OK;
 	
 	if(es==NULL || es->state!=ES_ACCEPTED)
-		return;
+		return 0;
 
 
  
@@ -365,9 +352,11 @@ void tcp_echoserver_send_data(struct tcp_echoserver_struct *es,void *payload,u16
       data (with the amount plen) has been processed by the application layer */
       tcp_recved(tpcb, plen);
    } else {
-     /* other problem ?? */
+     return 0;
    }
   }
+	
+	return 1;
 }
 
 /**

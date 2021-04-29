@@ -30,6 +30,25 @@
 #ifndef __TCP_ECHOSERVER_H__
 #define __TCP_ECHOSERVER_H__
 
+/* ECHO protocol states */
+enum tcp_echoserver_states
+{
+  ES_NONE = 0,
+  ES_ACCEPTED,
+  ES_RECEIVED,
+  ES_CLOSING
+};
+
+/* structure for maintaing connection infos to be passed as argument 
+   to LwIP callbacks*/
+struct tcp_echoserver_struct
+{
+  unsigned char state;             /* current connection state */
+  struct tcp_pcb *pcb;    /* pointer on the current tcp_pcb */
+  struct pbuf *p;         /* pointer on the received/to be transmitted pbuf */
+};
+
+
 void tcp_echoserver_init(void);
 
 #endif /* __TCP_ECHOSERVER */

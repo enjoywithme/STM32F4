@@ -418,6 +418,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\serial_debug.c</FilePath>
             </File>
+            <File>
+              <FileName>data_sample.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\data_sample.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -487,6 +492,11 @@
               <FileName>stm32f4xx_syscfg.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_syscfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_spi.c</FilePath>
             </File>
           </Files>
         </Group>

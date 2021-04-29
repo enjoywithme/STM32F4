@@ -45,6 +45,7 @@
 #include "main.h"
 #include "tcp_echoserver.h"
 #include "serial_debug.h"
+#include "data_sample.h"
 #include <stdio.h>
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,10 +63,6 @@
 __IO uint32_t LocalTime = 0; /* this variable is used to create a time reference incremented by 10ms */
 uint32_t timingdelay;
 
-extern struct tcp_echoserver_struct *client_es;//接受的客户端连接
-extern void tcp_echoserver_send_data(struct tcp_echoserver_struct *es,void *payload,uint16_t len);
-
-unsigned char arr1[]={'1','2', '3', '4', '5'};
 
 /* Private function prototypes -----------------------------------------------*/
 void LCD_LED_Init(void);
@@ -85,7 +82,10 @@ int main(void)
        To reconfigure the default setting of SystemInit() function, refer to
        system_stm32f4xx.c file
      */
-
+	
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	
+	
 #ifdef SERIAL_DEBUG 
 	DebugComPort_Init();
 #endif
@@ -95,7 +95,10 @@ int main(void)
   /*Initialize LCD and Leds */ 
   LCD_LED_Init();
 	STM_EVAL_LEDOn(LED3);
-  STM_EVAL_LEDOn(LED4);
+  
+	
+	/*配置ADS1274*/
+	ADS1274_Config();
 	
   /* configure ethernet (GPIOs, clocks, MAC, DMA) */ 
   ETH_BSP_Config();
@@ -115,11 +118,15 @@ int main(void)
       LwIP_Pkt_Handle();
     }
 		
+		//停止或者启动AD
+		ADS1274_run();
+
+		
     /* handle periodic timers for LwIP */
     LwIP_Periodic_Handle(LocalTime);
 		
-		//测试发送数据
-		tcp_echoserver_send_data(client_es,arr1,5);
+		//通过TCP发送数据
+		ADS1274_tcp_send_data();
   }   
 }
 
